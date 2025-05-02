@@ -43,9 +43,46 @@ El siguiente diseño es una propuesta base de una ruta general para implementar 
 
 # Demo Docker
 
+El siguiente es un servicio básico RESTful HTTP para implementar operaciones de MLOps. Este servicio retorna las siguientes categorías de condición de enfermedad de un paciente a partir de la temperatura, el ritmo cardiaco, y la presión sanguínea como parámetros de consulta (query params):
+- "NO ENFERMO"
+- "ENFERMEDAD LEVE"
+- "ENFERMEDAD AGUDA"
+- "ENFERMEDAD CRÓNICA"
+
+NOTA: LA SIGUIENTE ES UNA FUNCIONALIDAD SIN NINGÚN SUSTENTO MÉDICO, SOLO ES UN MOCK DE UN MODELO DE CLASIFICACIÓN.
+
+Construcción y ejecución local con Docker:
+```bash
+# construir imagen
+docker build -t svc-demo-salud .
+
+# ejecutar contenedor en puerto 5000
+docker run --rm --name demo-salud -p 5000:80 svc-demo-salud
+```
+
+Solicitar predicciones a través del navegador web:
+- http://localhost:5000/predict?temperature=36&heart_rate=120&blood_pressure=90
+- http://localhost:5000/predict?temperature=38&heart_rate=120&blood_pressure=90
+- http://localhost:5000/predict?temperature=38.5&heart_rate=140&blood_pressure=90
+- http://localhost:5000/predict?temperature=36&heart_rate=150&blood_pressure=180
+
+En su defecto en terminal:
+```bash
+# método GET
+curl "http://localhost:5000/predict?temperature=36&heart_rate=120&blood_pressure=90"
+
+# método POST
+curl -X POST "http://localhost:5000/predict?temperature=36&heart_rate=120&blood_pressure=90"
+```
+
+Remover imagen de docker:
+```bash
+docker rmi svc-demo-salud
+```
 
 
 # Referencias
 
 - https://cloud.google.com/discover/what-is-mlops
 - https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning
+- https://fastapi.tiangolo.com/deployment/docker/
