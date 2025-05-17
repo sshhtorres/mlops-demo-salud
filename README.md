@@ -1,16 +1,47 @@
 # MLOps Demo Caso Salud
 
-El siguiente repo presenta una propuesta de diseño base y demo básico MLOps considerando un caso del sector salud.
+El siguiente repo presenta una propuesta de diseño base específica y un demo básico MLOps considerando un caso del sector salud. Se incluye una propuesta general de flujo MLOps como referencia guía para aplicar a casos de manera genérica.
 
 **Caso de trabajo:** "Se requiere construir un modelo que sea capaz de predecir, dados los datos de síntomas de un paciente, si es posible o no que este sufra de alguna enfermedad. Esto se requiere tanto para enfermedades comunes (muchos datos) como para enfermedades huérfanas (pocos datos)."
 
 Contenido:
 - [Diseño MLOps](#diseño-mlops)
+    - [Propuesta específica](#propuesta-específica)
+    - [Propuesta general](#propuesta-general)
 - [Demo Docker](#demo-docker)
 - [Referencias](#referencias)
 
 
 # Diseño MLOps
+
+## Propuesta específica
+
+El siguiente diseño es una propuesta específica para el caso considerado:
+
+**1. Fuente de datos**: la fuente de datos es información estructurada que corresponde a paraclínicos almacenados en la base de datos del servicio de salud prestado.
+
+**2. Disponibilización de datos**: se extrae la información bruta de la base de datos del servicio de salud utilizando el lenguaje SQL y utilidades de línea de comandos para bases de datos como `psql` para almacenar en local en formato CSV, y se pre-procesa la información transformando datos con la librería Pandas para corregir formatos y limpiar datos erróneos.
+
+**3. Almacenamiento de datos para analítica y AI/ML**: se almacena la información pre-procesada en un bucket de Cloud Storage (servicio de almacenamiento de objetos en Google Cloud) para facilitar su acceso y distribución.
+
+**4. Análisis exploratorio de datos**: utilizando un notebook de Jupyter se hace el análisis exploratorio de datos donde se identifican las distribuciones de los datos, se corrigen posibles desbalances de categorías que requieran un submuestreo, se buscan posibles correlaciones de los paraclínicos y las condiciones de salud, y se definen características (features) para la construcción de modelos.
+
+**5. Desarrollo y experimentación de modelos y pipelines AI/ML**: utilizando un notebook de Jupyter se normalizan y codifican los datos; se seleccionan los tipos de modelos de árboles de decision (random forest), XGBoost, y red MLP (Multilayer Perceptron) para clasificación multiclase de las posibles enfermedades de los pacientes; y se aplica un protocolo de optimización y evaluación con datos de entrenamiento (70%), validación (10%), y prueba (20%), utilizando una herramienta de seguimiento de experimentos como MLFlow para registrar las métricas de clasificación mutliclase como F1, precisión, exhaustividad (recall), y matriz de confusión.
+
+Una vez establecido el modelo con mejor desempeño, se crea un pipeline de Scikit-learn compuesto por los pasos de normalización, codificación, y predicción, que se serializa en formato PKL como serialización Pickle soportada por Python, y se almacena en un bucket de Cloud Storage (servicio de almacenamiento de objetos en Google Cloud) para facilitar su acceso y distribución.
+
+**6. Integración continua a partir de actualización de repositorios Git**: se suben los cambios necesarios en el repositorio de Git que define el servicio RESTful desarrollado con FastAPI en Python, compatible con el formato PKL, y se ejecuta un pipeline de GitHub Actions que evalúa las pruebas unitarias sobre las predicciones del servicio, y crea los artefactos de despliegue del servicio.
+
+**7. Despliegue continuo:** a través de un pipeline de GitHub Actions se despliega el servicio RESTful de predicción en Cloud Run (servicio serverless de Google Cloud).
+
+**8. Observabilidad AI/ML:** al final de cada día se ejecuta un trabajo programado en Cloud Run Jobs (servicio para ejecución batch de Google Cloud) que alerte sobre:
+* cambios de deriva de los datos de entrada del servicio RESTful de predicción, almacenanados en Firebase (base de datos serverless de Google Cloud).
+* cambios de deriva de los nuevos datos registrados en la base de datos del servicio de salud prestado.
+* disminución de las métricas de evaluación de desempeño del modelo según nuevos datos del servicio de salud prestado y sus correspondientes nuevas etiquetas de clasificación de enfermedad definidas los médicos.
+
+**9. Reentrenamiento:** se automatiza a través de un pipeline de GitHub Actions el reentrenamiento de los tipos de modelos utilizados previamente que permita encontrar un nuevo modelo con mejor desempeño a partir de los nuevos datos del servicio de salud prestado.
+
+## Propuesta general
 
 El siguiente diseño es una propuesta base de una ruta general para implementar un sistema de AI/ML según requerimientos específicos del problema y la organización. Si bien presenta un escenario con múltiples roles y tareas, se pueden simplificar según capacidades disponibles. Se referencian servicios y tecnologías principalmente de Google Cloud y algunas alternativas de uso libre.
 
@@ -34,11 +65,11 @@ El siguiente diseño es una propuesta base de una ruta general para implementar 
 
 **8. Analítica operacional**: los servicios y pipelines de AI/ML pueden procesar datos recientes del sistema para automatizar ajustes de la operación que optimicen el cumplimiento de objetivos de negocio. Estos procesos se implementan principalmente en tiempo real, sin embargo, según requerimientos se pueden ejecutar de manera periódica.
 
-**9. Observabilidad AI/ML**: en producción se deben monitorear la deriva de datos (data drift) y la deriva de concepto (concept drift) para mantener la efectividad de los servicios y pipelines de AI/ML. En caso que se presenten desviaciones, es posible reentrenar los modelos como respuesta del sistema.
+**9. Observabilidad AI/ML**: en producción se deben monitorear la deriva de datos (data drift), la deriva de concepto (concept drift), y el desempeño de los modelos con los nuevos datos del sistema para alertar sobre la efectividad de los servicios y pipelines de AI/ML. En caso que se presenten desviaciones, es posible reentrenar los modelos como respuesta del sistema.
 
 **10. Flujo CI/CD automatizado de reentrenamiento:** si se tiene un grado de madurez de procesos que asegura el reentrenamiento de modelos con una alta evaluación de sus métricas, este reentrenamiento puede iniciar un flujo de CI/CD de manera automatizada. En su defecto, la decisión de actualizar los modelos utilizados en producción es aprobada de manera manual.
 
-**11. Entrenamiento continuo:** el reentrenamiento continuo de modelos a partir de nuevos datos es un proceso que requiere un grado avanzado de madurez y robustez al sistema, infraestructura y equipo técnico. Es importante precisar que no todos los sistemas y casos lo requieren, sino que un reentrenamiento periódicamente puede ser suficiente.
+**11. Entrenamiento continuo:** el reentrenamiento continuo de modelos a partir de nuevos datos es un proceso que requiere un grado avanzado de madurez y robustez al sistema, infraestructura y equipo técnico. Según las alertas emitidas por los mecanismos y servicios de observabilidad, se procede a reentrenar un nuevo modelo bajo las nuevas condiciones registradas en el sistema.
 
 
 # Demo Docker
