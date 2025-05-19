@@ -4,6 +4,9 @@ on:
       - dev
       - main
 
+permissions:
+  pull-requests: write
+
 jobs:
   pr-check:
     runs-on: ubuntu-latest
@@ -12,6 +15,7 @@ jobs:
       - name: 'Comentario de PR: Ejecutando pruebas'
         uses: thollander/actions-comment-pull-request@v3
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           message: |
             ⚙ Ejecutando pruebas unitarias...
 
