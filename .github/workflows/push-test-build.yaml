@@ -1,0 +1,41 @@
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout de código
+        uses: actions/checkout@v3
+
+      - name: Definición de variables adicionales de ambiente
+        id: vars
+        run: |
+          echo "CURRENT_BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      - name: Configurar acceso a GitHub Container Registry 
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construir imagen de contenedor
+        run: |
+          docker build \
+            -t ghcr.io/${{ github.repository }}:${{ github.sha }} \
+            -t ghcr.io/${{ github.repository }}:${{ env.CURRENT_BRANCH }} \
+            .
+
+      - name: Subir imagen de contenedor
+        run: |
+          docker push ghcr.io/${{ github.repository }}:${{ github.sha }} \
+          && docker push ghcr.io/${{ github.repository }}:${{ env.CURRENT_BRANCH }}
