@@ -9,6 +9,8 @@ Contenido:
     - [Propuesta específica](#propuesta-específica)
     - [Propuesta general](#propuesta-general)
 - [Demo Docker](#demo-docker)
+    - [Servicio en local con Docker](#servicio-en-local-con-docker)
+    - [Pruebas en local con Docker](#pruebas-en-local-con-docker)
 - [Referencias](#referencias)
 
 
@@ -82,6 +84,8 @@ El siguiente es un servicio básico RESTful HTTP para implementar operaciones de
 
 NOTA: LA SIGUIENTE ES UNA FUNCIONALIDAD SIN NINGÚN SUSTENTO MÉDICO, SOLO ES UN MOCK DE UN MODELO DE CLASIFICACIÓN.
 
+## Servicio en local con Docker
+
 Construcción y ejecución local con Docker:
 ```bash
 # construir imagen
@@ -109,6 +113,18 @@ curl -X POST "http://localhost:5000/predict?temperature=36&heart_rate=120&blood_
 Remover imagen de docker:
 ```bash
 docker rmi svc-demo-salud
+```
+
+
+## Pruebas en local con Docker
+
+Construcción y ejecución de pruebas en local con Docker:
+```bash
+# construir imagen
+docker build -t svc-demo-salud:tests -f Dockerfile.tests .
+
+# ejecutar contenedor de pruebas
+docker run --rm --name demo-salud-tests svc-demo-salud:tests
 ```
 
 
