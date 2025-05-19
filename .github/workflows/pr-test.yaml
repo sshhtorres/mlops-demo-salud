@@ -21,6 +21,8 @@ jobs:
 
       - name: Checkout código
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Instalación de dependencias
         run: pip install --no-cache-dir --upgrade -r requirements.txt -r requirements.test.txt
