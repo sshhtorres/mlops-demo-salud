@@ -1,3 +1,5 @@
+# NOTA: LAS ENTREGAS SIGUIENTES DEL TALLER SE REALIZAN EN https://github.com/sshhtorres/hector-torres-mlops-U2
+
 # MLOps Demo Caso Salud
 
 El siguiente repo presenta una propuesta de diseño base específica y un demo básico MLOps considerando un caso del sector salud. Se incluye una propuesta general de flujo MLOps como referencia guía para aplicar a casos de manera genérica.
