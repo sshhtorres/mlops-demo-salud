@@ -1,0 +1,38 @@
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  pr-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Comentario de PR: Ejecutando pruebas'
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          message: |
+            ⚙ Ejecutando pruebas unitarias...
+
+      - name: Checkout código
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Instalación de dependencias
+        run: pip install --no-cache-dir --upgrade -r requirements.txt -r requirements.test.txt
+
+      - name: Ejecución de pruebas
+        run: pytest -q --tb=short --disable-warnings --maxfail=1
+
+      - name: 'Comentario de PR: Pruebas exitosas'
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          message: |
+            ✅ Pruebas unitarias exitosas
